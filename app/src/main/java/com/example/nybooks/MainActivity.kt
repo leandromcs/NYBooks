@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nybooks.adapter.BookAdapter
 import com.example.nybooks.databinding.ActivityMainBinding
 import com.example.nybooks.model.BooksResponse
+import com.example.nybooks.repository.Result
 import com.example.nybooks.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -25,13 +26,18 @@ class MainActivity : AppCompatActivity() {
 
         val viewModel by viewModels<MainViewModel>()
 
-        viewModel.getBooks()
-
-        viewModel.booksResponse.observe(this) {
-            binding.rvBooks.apply {
-                layoutManager = LinearLayoutManager(context)
-                setHasFixedSize(true)
-                adapter = BookAdapter(it.results)
+        viewModel.getBooks().observe(this) {
+            when(it) {
+                is Result.Success -> {
+                    binding.rvBooks.apply {
+                        layoutManager = LinearLayoutManager(context)
+                        setHasFixedSize(true)
+                        adapter = BookAdapter(it.data?.results!!)
+                    }
+                }
+                is Result.Error -> {
+                    println(it.exception.message)
+                }
             }
         }
     }
